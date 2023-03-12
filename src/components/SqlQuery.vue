@@ -130,7 +130,8 @@ export default {
         "<",
         "<=",
         ">",
-        ">="
+        ">=",
+        "in"
       ],
       whereConnect: [
         "and",
@@ -232,21 +233,24 @@ export default {
     },
     getList() {
       // 组合sql
+      let param = {
+        page: this.dataListQueryParam.page,
+        pageSize: this.dataListQueryParam.pageSize
+      }
       if (this.filters && this.filters.length > 0) {
-        this.dataListQueryParam["whereSql"] = this.assembleWhereSql();
+        param["whereSql"] = this.assembleWhereSql();
       }
       if (this.sorts && this.sorts.length > 0) {
-        this.dataListQueryParam["orderList"] = this.assembleOrderSql();
+        param["orderList"] = this.assembleOrderSql();
       }
 
       this.axios
-        .post('sql/query/table/dataList', this.dataListQueryParam)
+        .post('sql/query/table/dataList', param)
         .then(res => {
           let data = res.data
           if (data.status === 200) {
             this.dataList = data.data.dataList;
             this.total = data.data.total
-            console.log(this.dataList)
           } else {
             ElMessage({
               showClose: true,
@@ -276,6 +280,9 @@ export default {
           case "<":
           case "<=":
             whereSql += res.column + res.operate + res.value + " " + connect + " ";
+            break;
+          case "in":
+            whereSql += res.column + " " + res.operate + " (" + res.value + ") " + connect + " ";
             break;
           default:
         }
